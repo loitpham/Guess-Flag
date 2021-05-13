@@ -18,7 +18,8 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color.blue.edgesIgnoringSafeArea(.all)
+            LinearGradient(gradient: Gradient(colors: [Color.blue, Color.black]), startPoint: .top, endPoint: .bottom)
+                .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 30) {
                 VStack {
@@ -27,6 +28,8 @@ struct ContentView: View {
                     
                     Text(countries[correctAnswer])
                         .foregroundColor(.white)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
                 }
                 
                 ForEach(0..<3) { number in
@@ -35,6 +38,9 @@ struct ContentView: View {
                     }) {
                         Image(countries[number])
                             .renderingMode(.original)
+                            .clipShape(Capsule())
+                            .overlay(Capsule().stroke(Color.black, lineWidth: 1))
+                            .shadow(color: .black, radius: 2)
                     }
                 }
                 
@@ -61,7 +67,7 @@ struct ContentView: View {
     }
     
     func askQuestion() {
-        countries.shuffled()
+        countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
     }
 }
