@@ -29,6 +29,10 @@ struct ContentView: View {
     @State private var scoreTitle = ""
     
     @State private var score = 0
+    
+    @State private var animationAmount = 0.0
+    @State private var fadeOut = false
+    @State private var normal = true
 
     var body: some View {
         ZStack {
@@ -48,10 +52,18 @@ struct ContentView: View {
                 
                 ForEach(0..<3) { number in
                     Button(action: {
-                        flagTapped(number)
+                        withAnimation(.easeInOut(duration: 2).repeatCount(3)) {
+                            flagTapped(number)
+                        }
                     }) {
                         FlagImage(imageName: countries[number])
                     }
+                    .rotation3DEffect(
+                        isCorrect(number) ?  .degrees(animationAmount) : .zero,
+                        axis: (x: 0.0, y: 1.0, z: 0.0)
+                    )
+                    .opacity(normal || (fadeOut && isCorrect(number)) ? 1.0 : 0.25)
+                    
                 }
                 
                 Text("Current score")
@@ -61,21 +73,40 @@ struct ContentView: View {
                     .font(.largeTitle)
                     .fontWeight(.semibold)
                 
+                if showingScore {
+                    VStack {
+                        Text(scoreTitle)
+                            .padding()
+                            .foregroundColor(.white)
+                            .font(.title)
+                        
+                        Button(action: {
+                            askQuestion()
+                            showingScore = false
+                        }) {
+                            Text("Next")
+                                .font(.title)
+                        }
+                    }
+                }
+                
                 Spacer()
+                
             }
-        }
-        .alert(isPresented: $showingScore) {
-            Alert(title: Text(scoreTitle),                
-                  dismissButton: .default(Text("Continue")) {
-                    askQuestion()
-                  })
         }
     }
     
+    func isCorrect(_ number: Int) -> Bool {
+        return number == correctAnswer
+    }
+    
     func flagTapped(_ number: Int) {
-        if number == correctAnswer {
+        if isCorrect(number) {
             scoreTitle = "Correct"
             score += 10
+            animationAmount += 360
+            fadeOut = true
+            normal = false
         } else {
             scoreTitle = "Wrong. That's the flag of \(countries[number])"
             score -= 5
@@ -87,6 +118,7 @@ struct ContentView: View {
     func askQuestion() {
         countries.shuffle()
         correctAnswer = Int.random(in: 0...2)
+        normal = true
     }
 }
 
